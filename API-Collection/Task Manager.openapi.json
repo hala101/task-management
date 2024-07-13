@@ -1,0 +1,386 @@
+{
+    "openapi": "3.0.1",
+    "info": { "title": "Task Manager", "description": "", "version": "1.0.0" },
+    "tags": [],
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "summary": "User Login",
+                "deprecated": false,
+                "description": "",
+                "tags": [],
+                "parameters": [
+                    {
+                        "name": "Content-Type",
+                        "in": "header",
+                        "description": "",
+                        "required": true,
+                        "example": "application/x-www-form-urlencoded",
+                        "schema": { "type": "string" }
+                    },
+                    { "name": "Accept", "in": "header", "description": "", "required": true, "example": "application/json", "schema": { "type": "string" } }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": { "description": "(Required) ", "example": "nilkanth@gmail.com", "type": "string" },
+                                    "password": { "description": "(Required) ", "example": "Test@123", "type": "string" }
+                                },
+                                "required": ["email", "password"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": { "type": "string" },
+                                        "message": { "type": "string" },
+                                        "data": { "type": "object", "properties": { "token": { "type": "string" } }, "required": ["token"] }
+                                    },
+                                    "required": ["error", "message", "data"]
+                                },
+                                "examples": {
+                                    "1": { "summary": "Success", "value": { "error": "<boolean>", "message": "<string>", "data": { "token": "<string>" } } }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "summary": "User Registration",
+                "deprecated": false,
+                "description": "",
+                "tags": [],
+                "parameters": [
+                    {
+                        "name": "Content-Type",
+                        "in": "header",
+                        "description": "",
+                        "required": true,
+                        "example": "application/x-www-form-urlencoded",
+                        "schema": { "type": "string" }
+                    },
+                    { "name": "Accept", "in": "header", "description": "", "required": true, "example": "application/json", "schema": { "type": "string" } }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": { "description": "(Required) ", "example": "john@gmail.com", "type": "string" },
+                                    "password": { "description": "(Required) ", "example": "Test@123", "type": "string" }
+                                },
+                                "required": ["email", "password"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "400": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": { "type": "string" },
+                                        "message": { "type": "string" },
+                                        "data": { "type": "object", "properties": {} }
+                                    },
+                                    "required": ["status", "message", "data"]
+                                },
+                                "examples": { "1": { "summary": "Success", "value": { "status": "<boolean>", "message": "<string>", "data": {} } } }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/tasks/create": {
+            "post": {
+                "summary": "Create Task",
+                "deprecated": false,
+                "description": "",
+                "tags": [],
+                "parameters": [
+                    {
+                        "name": "Content-Type",
+                        "in": "header",
+                        "description": "",
+                        "required": true,
+                        "example": "multipart/form-data",
+                        "schema": { "type": "string" }
+                    },
+                    { "name": "Accept", "in": "header", "description": "", "required": true, "example": "application/json", "schema": { "type": "string" } }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "description": "(Required) ", "example": "Design Landing Page", "type": "string" },
+                                    "priority": { "description": "(Required) ", "example": "high", "type": "string" },
+                                    "dueDate": { "description": "(Required) ", "example": "2024-07-28", "type": "string" },
+                                    "category": { "description": "(Required) ", "example": "UI/Ux", "type": "string" },
+                                    "status": { "description": "(Required) status", "example": "in progress", "type": "string" },
+                                    "notes": { "description": "(Required) ", "example": "Please complete ASAP", "type": "string" },
+                                    "attachments": { "description": "(Required) ", "type": "string", "format": "binary" },
+                                    "isTemplate": { "example": "true", "type": "string" },
+                                    "recurrence": { "description": "daily | weekly | monthly | yearly | null", "example": "weekly", "type": "string" }
+                                },
+                                "required": ["name", "priority", "dueDate", "category", "status", "notes", "attachments", "isTemplate", "recurrence"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": { "type": "string" },
+                                        "message": { "type": "string" },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "userId": { "type": "string" },
+                                                "name": { "type": "string" },
+                                                "priority": { "type": "string" },
+                                                "dueDate": { "type": "string" },
+                                                "category": { "type": "string" },
+                                                "status": { "type": "string" },
+                                                "notes": { "type": "string" },
+                                                "attachments": { "type": "array", "items": { "type": "string" } },
+                                                "collaborators": { "type": "array", "items": { "type": "string" } },
+                                                "_id": { "type": "string" },
+                                                "__v": { "type": "string" }
+                                            },
+                                            "required": [
+                                                "userId",
+                                                "name",
+                                                "priority",
+                                                "dueDate",
+                                                "category",
+                                                "status",
+                                                "notes",
+                                                "attachments",
+                                                "collaborators",
+                                                "_id",
+                                                "__v"
+                                            ]
+                                        }
+                                    },
+                                    "required": ["error", "message", "data"]
+                                },
+                                "examples": {
+                                    "1": {
+                                        "summary": "Success",
+                                        "value": {
+                                            "error": "<boolean>",
+                                            "message": "<string>",
+                                            "data": {
+                                                "userId": "<string>",
+                                                "name": "<string>",
+                                                "priority": "<string>",
+                                                "dueDate": "<string>",
+                                                "category": "<string>",
+                                                "status": "<string>",
+                                                "notes": "<string>",
+                                                "attachments": ["<string>", "<string>"],
+                                                "collaborators": ["<string>", "<string>"],
+                                                "_id": "<string>",
+                                                "__v": "<integer>"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [{ "bearer": [] }]
+            }
+        },
+        "/tasks/update/669246dd968c0d91647c430d": {
+            "put": {
+                "summary": "Update Task",
+                "deprecated": false,
+                "description": "",
+                "tags": [],
+                "parameters": [
+                    {
+                        "name": "Content-Type",
+                        "in": "header",
+                        "description": "",
+                        "required": true,
+                        "example": "multipart/form-data",
+                        "schema": { "type": "string" }
+                    },
+                    { "name": "Accept", "in": "header", "description": "", "required": true, "example": "application/json", "schema": { "type": "string" } }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "description": "(Required) ", "example": "Automation Task Need To Finish", "type": "string" },
+                                    "priority": { "description": "(Required) ", "example": "low", "type": "string" },
+                                    "dueDate": { "description": "(Required) ", "example": "2024-07-25", "type": "string" },
+                                    "category": { "description": "(Required) ", "example": "QA", "type": "string" },
+                                    "status": { "description": "(Required) ", "example": "in progress", "type": "string" },
+                                    "notes": { "description": "(Required) ", "example": "Please complete Later on", "type": "string" },
+                                    "isTemplate": { "description": "(Required) ", "example": "false", "type": "string" },
+                                    "recurrence": { "example": "daily", "type": "string" }
+                                },
+                                "required": ["name", "priority", "dueDate", "category", "status", "notes", "isTemplate", "recurrence"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "500": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": { "type": "string" },
+                                        "message": { "type": "string" },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": { "name": { "type": "string" }, "message": { "type": "string" }, "stack": { "type": "string" } },
+                                            "required": ["name", "message", "stack"]
+                                        }
+                                    },
+                                    "required": ["error", "message", "data"]
+                                },
+                                "examples": {
+                                    "1": {
+                                        "summary": "Success",
+                                        "value": {
+                                            "error": "<boolean>",
+                                            "message": "<string>",
+                                            "data": { "name": "<string>", "message": "<string>", "stack": "<string>" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [{ "bearer": [] }]
+            }
+        },
+        "/tasks/search": {
+            "get": {
+                "summary": "Search task",
+                "deprecated": false,
+                "description": "",
+                "tags": [],
+                "parameters": [
+                    { "name": "Accept", "in": "header", "description": "", "required": true, "example": "application/json", "schema": { "type": "string" } }
+                ],
+                "requestBody": { "content": { "multipart/form-data": { "schema": { "type": "object", "properties": {} } } } },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": { "schema": { "type": "object", "properties": {} }, "examples": { "1": { "summary": "Success", "value": {} } } }
+                        }
+                    }
+                },
+                "security": [{ "bearer": [] }]
+            }
+        },
+        "/tasks/delete/66924775968c0d91647c4311": {
+            "delete": {
+                "summary": "Delete Tasks",
+                "deprecated": false,
+                "description": "",
+                "tags": [],
+                "parameters": [
+                    { "name": "Accept", "in": "header", "description": "", "required": true, "example": "application/json", "schema": { "type": "string" } }
+                ],
+                "requestBody": { "content": { "application/x-www-form-urlencoded": { "schema": { "type": "object", "properties": {} } } } },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": { "schema": { "type": "object", "properties": {} }, "examples": { "1": { "summary": "Success", "value": {} } } }
+                        }
+                    }
+                },
+                "security": [{ "bearer": [] }]
+            }
+        },
+        "/tasks/share/669246dd968c0d91647c430d": {
+            "post": {
+                "summary": "Share Task",
+                "deprecated": false,
+                "description": "",
+                "tags": [],
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": { "collaboratorId": { "example": "6692483a968c0d91647c431d", "type": "string" } },
+                                "required": ["collaboratorId"]
+                            }
+                        }
+                    }
+                },
+                "responses": { "200": { "description": "Success", "content": { "application/json": { "schema": { "type": "object", "properties": {} } } } } },
+                "security": [{ "bearer": [] }]
+            }
+        },
+        "/user/dashboard": {
+            "get": {
+                "summary": "Dashboard Data",
+                "deprecated": false,
+                "description": "",
+                "tags": [],
+                "parameters": [
+                    { "name": "q", "in": "query", "description": "", "required": false, "example": "<string>", "schema": { "type": "string" } },
+                    { "name": "priority", "in": "query", "description": "", "required": false, "example": "low", "schema": { "type": "string" } },
+                    { "name": "status", "in": "query", "description": "", "required": false, "example": "<string>", "schema": { "type": "string" } },
+                    { "name": "sortBy", "in": "query", "description": "", "required": false, "example": "<string>", "schema": { "type": "string" } },
+                    { "name": "Accept", "in": "header", "description": "", "required": true, "example": "application/json", "schema": { "type": "string" } }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": { "schema": { "type": "object", "properties": {} }, "examples": { "1": { "summary": "Success", "value": {} } } }
+                        }
+                    }
+                },
+                "security": [{ "bearer": [] }]
+            }
+        }
+    },
+    "components": { "schemas": {}, "securitySchemes": { "bearer": { "type": "http", "scheme": "bearer" } } },
+    "servers": []
+}
