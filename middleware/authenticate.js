@@ -3,8 +3,13 @@ require("dotenv").config();
 
 module.exports = function (req, res, next) {
     // console.log("🚀 ~ file: authenticate.js:7 ~ req.header:", req.header("Authorization"));
-    const token = req.headers.authorization.replace("Bearer", "").trim();
-
+    let token;
+    if (req.headers.authorization) {
+        token = req.headers.authorization.replace("Bearer", "").trim();
+    } else if (req.cookies.token) {
+        console.log("🚀 ~ file: authenticate.js:11 ~ req.cookies.token:", req.cookies.token);
+        token = req.cookies.token;
+    }
     if (!token) {
         return res.status(401).send("No token, authorization denied");
     }

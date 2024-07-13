@@ -1,11 +1,15 @@
 const Task = require("../models/Task");
 const User = require("../models/User");
 const { io } = require("../app");
+const schedule = require("node-schedule");
+
 const { commonResponse, fileUploadHelper } = require("../helpers");
 
 exports.getTasks = async (req, res) => {
     try {
         const tasks = await Task.find({ userId: req.user.id });
+
+        console.log("🚀 ~ file: taskController.js:12 ~ exports.getTasks= ~ tasks:", tasks);
         res.render("dashboard", { tasks });
     } catch (error) {
         console.log("🚀 ~ file: taskController.js:12 ~ exports.getTasks= ~ error:", error);
@@ -14,7 +18,7 @@ exports.getTasks = async (req, res) => {
 };
 
 exports.createTask = async (req, res) => {
-    let { name, priority, dueDate, category, status, notes, attachments } = req.body;
+    let { name, priority, dueDate, category, status, notes, attachments, isTemplate, recurrence } = req.body;
 
     console.log("🚀 ~ file: taskController.js:19 ~ exports.createTask= ~ req.body:", req.body);
     try {
@@ -34,6 +38,8 @@ exports.createTask = async (req, res) => {
             status,
             notes,
             attachments,
+            isTemplate,
+            recurrence,
         });
         let task = await newTask.save();
         return commonResponse.success(res, "TASK_CREATED", 201, task);
@@ -94,7 +100,7 @@ exports.deleteTask = async (req, res) => {
         if (task.userId.toString() !== req.user.id) {
             return commonResponse.error(res, "UNAUTHORIZED", 401, {});
         }
-        await task.remove();
+        await Task.findByIdAndDelete({ _id: req.params.id }, { new: true }).lean();
         return commonResponse.success(res, "TASK_DELETED", 200, {});
     } catch (error) {
         console.log("🚀 ~ file: taskController.js:81 ~ exports.deleteTask ~ error:", error);
@@ -130,14 +136,52 @@ exports.shareTask = async (req, res) => {
     }
 };
 
-exports.searchTasks = async (req, res) => {
-    const { q, priority, status, sortBy } = req.query;
-    const query = { userId: req.user.id };
+exports.searchTasks = async (req, res) => {};
 
-    if (q) query.name = new RegExp(q, "i");
-    if (priority) query.priority = priority;
-    if (status) query.status = status;
-
-    const tasks = await Task.find(query).sort(sortBy);
-    res.render("dashboard", { tasks });
+/*
+ *  Create Recurring tasks
+ */
+exports.createRecurringTasks = async () => {
+    try {
+        const tasks = await Task.find({ recurrence: { $ne: null } });
+        if (tasks.length > 0) {
+            tasks.forEach((task) => {
+                const rule = getScheduleRule(task.recurrence);
+                schedule.scheduleJob(rule, async () => {
+                    const newTask = new Task({
+                        userId: task.userId,
+                        name: task.name,
+                        priority: task.priority,
+                        dueDate: task.dueDate,
+                        category: task.category,
+                        status: "to-do",
+                        notes: task.notes,
+                        attachments: task.attachments,
+                        recurrence: task.recurrence,
+                        lastExecuted: new Date(),
+                    });
+                    await newTask.save();
+                });
+            });
+        }
+    } catch (err) {
+        console.error("Error creating recurring tasks:", err);
+    }
 };
+
+function getScheduleRule(recurrence) {
+    switch (recurrence) {
+        case "continue":
+            return "* * * * *";
+        case "daily":
+            return "0 0 * * *"; // Every day at midnight
+        case "weekly":
+            return "0 0 * * 0"; // Every week at midnight on Sunday
+        case "monthly":
+            return "0 0 1 * *"; // Every month at midnight on the 1st
+        case "yearly":
+            return "0 0 1 1 *"; // Every year at midnight on January 1st
+        default:
+            return null;
+    }
+}

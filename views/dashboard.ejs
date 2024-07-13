@@ -1,38 +1,154 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/styles.css">
     <title>Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="/css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var taskList = document.getElementById('task-list');
+            var sortable = Sortable.create(taskList, {
+                onEnd: function (evt) {
+                    var order = sortable.toArray().map(id => parseInt(id));
+                    var reorderedTasks = order.map(orderId => {
+                        return <% JSON.stringify(tasks) %>.find(task => task.id === orderId);
+                    });
+                    fetch('/update-tasks', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ tasks: reorderedTasks })
+                    }).then(response => {
+                        if (response.ok) {
+                            console.log('Tasks reordered successfully');
+                        } else {
+                            console.error('Failed to reorder tasks');
+                        }
+                    });
+                },
+                dataIdAttr: 'data-id'
+            });
+
+            document.getElementById('add-task-form').addEventListener('submit-btn', function (e) {
+                e.preventDefault();
+                const title = document.getElementById('task-title').value;
+                const priority = document.getElementById('task-priority').value;
+                const dueDate = document.getElementById('task-dueDate').value;
+                const category = document.getElementById('task-category').value;
+                const status = document.getElementById('task-status').value;
+                const notes = document.getElementById('task-notes').value;
+                const attachments = document.getElementById('task-attachments').value;
+                fetch('/tasks/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    body: JSON.stringify({ title })
+                }).then(response => response.json())
+                    .then(task => {
+                        const row = document.createElement('tr');
+                        row.setAttribute('data-id', task._id);
+                        row.innerHTML = `<td>${task.title}</td>
+                                       <td>
+                                           <button onclick="editTask(${task._id})">Edit</button>
+                                           <button onclick="deleteTask(${task._id})">Delete</button>
+                                       </td>`;
+                        taskList.appendChild(row);
+                        document.getElementById('task-title').value = '';
+                    });
+            });
+        });
+
+        function editTask(id) {
+            const taskRow = document.querySelector(`tr[data-id="${id}"]`);
+            const taskTitle = taskRow.children[0].textContent;
+            const newTitle = prompt('Edit task title:', taskTitle);
+            if (newTitle) {
+                fetch(`/tasks/update/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title: newTitle })
+                }).then(response => response.json())
+                    .then(task => {
+                        taskRow.children[0].textContent = task.title;
+                    });
+            }
+        }
+
+        function deleteTask(id) {
+            fetch(`/tasks/delete/${id}`, {
+                method: 'DELETE'
+            }).then(() => {
+                const taskRow = document.querySelector(`tr[data-id="${id}"]`);
+                taskRow.remove();
+            });
+        }
+    </script>
 </head>
 
 <body>
-    <h1>Welcome to your Dashboard</h1>
-    <form action="/tasks/create" method="post">
-        <!-- form fields for task creation -->
-    </form>
-    <ul>
-        <% tasks.forEach(task=> { %>
-            <li>
-                <%= task.name %> - <%= task.priority %> - <%= task.status %>
-                            <!-- task actions -->
-            </li>
-            <% }) %>
-    </ul>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        socket.on('taskUpdated', task => {
-            console.log('Task updated:', task);
-            // update task in the UI
-        });
-        socket.on('taskShared', task => {
-            console.log('Task shared:', task);
-            // update task in the UI
-        });
-    </script>
+    <div class="dashboard-container">
+        <h2>Task List</h2>
+        <form enctype="multipart/form-data" id="add-task-form">
+            <table>
+                <tr>
+                    <td><label for="task-title">Task Name</label></td>
+                    <td><input type="text" id="task-title" placeholder="Task Name" required></td>
+                </tr>
+                <tr>
+                    <td><label for="task-priority">Task Priority</label></td>
+                    <td><input type="text" id="task-priority" placeholder="Priority" required></td>
+                </tr>
+                <tr>
+                    <td><label for="task-dueDate">Task Due Date</label></td>
+                    <td><input type="date" id="task-dueDate" required></td>
+                </tr>
+                <tr>
+                    <td><label for="task-category">Category</label></td>
+                    <td><input type="text" id="task-category" placeholder="Category" required></td>
+                </tr>
+                <tr>
+                    <td><label for="task-status">Status</label></td>
+                    <td><input type="text" id="task-status" placeholder="Status" required></td>
+                </tr>
+                <tr>
+                    <td><label for="notes">Notes</label></td>
+                    <td><input type="file" id="notes" accept=".txt,.pdf,.doc,.docx"></td>
+                </tr>
+                <tr>
+                    <td><label for="attachment">Attachments</label></td>
+                    <td><input type="file" id="attachment" accept=".jpg,.jpeg,.png,.gif,.pdf"></td>
+                </tr>
+            </table>
+            <button type="submit-btn">Add Task</button>
+        </form>
+        <br>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="task-list">
+                <% tasks.forEach(task=> { %>
+                    <tr data-id="<%= task._id %>">
+                        <td>
+                            <%= task.name %>
+                        </td>
+                        <td>
+                            <button onclick="editTask(<%= task._id %>)">Edit</button>
+                            <button onclick="deleteTask(<%= task._id %>)">Delete</button>
+                        </td>
+                    </tr>
+                    <% }) %>
+            </tbody>
+        </table>
+    </div>
 </body>
 
 </html>
