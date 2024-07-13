@@ -1,24 +1,28 @@
 const Task = require("../models/Task");
 const User = require("../models/User");
-const { io } = require("../app");
-const schedule = require("node-schedule");
+// const { io } = require("../app");
+const io = require("../helpers/task.connection");
+const pool = require("../helpers/task.connection");
 
 const { commonResponse, fileUploadHelper } = require("../helpers");
 
 exports.getTasks = async (req, res) => {
     try {
         const tasks = await Task.find({ userId: req.user.id });
-
-        console.log("🚀 ~ file: taskController.js:12 ~ exports.getTasks= ~ tasks:", tasks);
         res.render("dashboard", { tasks });
     } catch (error) {
         console.log("🚀 ~ file: taskController.js:12 ~ exports.getTasks= ~ error:", error);
-        return commonResponse.error(res, "SERVER_ERROR", 500, { name: error.name, message: error.message, stack: error.stack });
+
+        return commonResponse.error(res, "SERVER_ERROR", 500, {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        });
     }
 };
 
 exports.createTask = async (req, res) => {
-    let { name, priority, dueDate, category, status, notes, attachments, isTemplate, recurrence } = req.body;
+    let { name, priority, dueDate, category, status, notes, attachments } = req.body;
 
     console.log("🚀 ~ file: taskController.js:19 ~ exports.createTask= ~ req.body:", req.body);
     try {
@@ -38,14 +42,16 @@ exports.createTask = async (req, res) => {
             status,
             notes,
             attachments,
-            isTemplate,
-            recurrence,
         });
         let task = await newTask.save();
         return commonResponse.success(res, "TASK_CREATED", 201, task);
     } catch (error) {
         console.log("🚀 ~ file: taskController.js:33 ~ exports.createTask= ~ error:", error);
-        return commonResponse.error(res, "SERVER_ERROR", 500, { name: error.name, message: error.message, stack: error.stack });
+        return commonResponse.error(res, "SERVER_ERROR", 500, {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        });
     }
 };
 
@@ -78,14 +84,18 @@ exports.updateTask = async (req, res) => {
 
         let updatedData = await task.save();
 
-        io.to(req.user.id).emit("taskUpdated", task);
-        task.collaborators.forEach((collaborator) => {
-            io.to(collaborator.toString()).emit("taskUpdated", task);
-        });
+        // io.to(req.user.id).emit("taskUpdated", task);
+        // task.collaborators.forEach((collaborator) => {
+        //   io.to(collaborator.toString()).emit("taskUpdated", task);
+        // });
         return commonResponse.success(res, "TASK_UPDATED", 201, updatedData);
     } catch (error) {
         console.log("🚀 ~ file: taskController.js:62 ~ exports.updateTask= ~ error:", error);
-        return commonResponse.error(res, "SERVER_ERROR", 500, { name: error.name, message: error.message, stack: error.stack });
+        return commonResponse.error(res, "SERVER_ERROR", 500, {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        });
 
         // res.status(500).send("Server error");
     }
@@ -104,7 +114,11 @@ exports.deleteTask = async (req, res) => {
         return commonResponse.success(res, "TASK_DELETED", 200, {});
     } catch (error) {
         console.log("🚀 ~ file: taskController.js:81 ~ exports.deleteTask ~ error:", error);
-        return commonResponse.error(res, "SERVER_ERROR", 500, { name: error.name, message: error.message, stack: error.stack });
+        return commonResponse.error(res, "SERVER_ERROR", 500, {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        });
     }
 };
 
@@ -117,6 +131,7 @@ exports.shareTask = async (req, res) => {
         if (task.userId.toString() !== req.user.id) {
             return commonResponse.error(res, "UNAUTHORIZED", 401, {});
         }
+
         const { collaboratorId } = req.body;
         const collaborator = await User.findById(collaboratorId);
         if (!collaborator) {
@@ -125,6 +140,9 @@ exports.shareTask = async (req, res) => {
         if (task.collaborators.includes(collaboratorId)) {
             return commonResponse.error(res, "USER_ALREADY_COLLABORATOR", 400, {});
         }
+        if (collaboratorId.toString() === req.user.id) {
+            return commonResponse.error(res, "ACTION_CAN_NOT_PERFORMED", 401, {});
+        }
         task.collaborators.push(collaboratorId);
         await task.save();
         io.to(collaboratorId).emit("taskShared", task);
@@ -132,7 +150,11 @@ exports.shareTask = async (req, res) => {
         return commonResponse.success(res, "COLLABORATOR_ADDED", 200, {});
     } catch (error) {
         console.log("🚀 ~ file: taskController.js:110 ~ exports.shareTask= ~ error:", error);
-        return commonResponse.error(res, "SERVER_ERROR", 500, { name: error.name, message: error.message, stack: error.stack });
+        return commonResponse.error(res, "SERVER_ERROR", 500, {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        });
     }
 };
 

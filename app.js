@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const path = require("path");
 const socketIO = require("socket.io");
+// import io from "./src/chats/chat.connection";
+const io = require("./helpers/task.connection");
 const fileUpload = require("express-fileupload");
 const schedule = require("node-schedule");
 const cookieParser = require("cookie-parser");
@@ -39,23 +41,24 @@ app.use("/user", userRoutes);
 
 // Start server
 const server = app.listen(port, () => console.log(`Server running on port ${port}`));
+io.attach(server);
 
 // Setup WebSocket
 // const io = socketIO(server);
-const io = require("socket.io")({
-    cors: {
-        origin: "*",
-    },
-});
+// const io = require("socket.io")({
+//   cors: {
+//     origin: "*",
+//   },
+// });
 
-io.on("connection", (socket) => {
-    console.log("New client connected");
-    socket.on("disconnect", () => {
-        console.log("Client disconnected");
-    });
-});
+// io.on("connection", (socket) => {
+//   console.log("New client connected");
+//   socket.on("disconnect", () => {
+//     console.log("Client disconnected");
+//   });
+// });
 
-module.exports = { app, io };
+module.exports = { app };
 
 // Initialize recurring tasks
 const taskController = require("./controllers/taskController");
