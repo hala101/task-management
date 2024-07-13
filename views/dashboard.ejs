@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/styles.css">
+    <title>Dashboard</title>
+</head>
+
+<body>
+    <h1>Welcome to your Dashboard</h1>
+    <form action="/tasks/create" method="post">
+        <!-- form fields for task creation -->
+    </form>
+    <ul>
+        <% tasks.forEach(task=> { %>
+            <li>
+                <%= task.name %> - <%= task.priority %> - <%= task.status %>
+                            <!-- task actions -->
+            </li>
+            <% }) %>
+    </ul>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.on('taskUpdated', task => {
+            console.log('Task updated:', task);
+            // update task in the UI
+        });
+        socket.on('taskShared', task => {
+            console.log('Task shared:', task);
+            // update task in the UI
+        });
+    </script>
+</body>
+
+</html>

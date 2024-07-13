@@ -1,0 +1,24 @@
+{
+    "MISSING_CREDENTIALS": "Missing credentials",
+    "ROUTES_NOT_FOUND": "Wrong Route",
+    "USER_EXIST": "User is already exist.",
+    "USER_NOT_FOUND": "You are not registered with app. Please sign up first.",
+    "USER_DELETE": "Your Profile Deleted Successfully.",
+    "DEFAULT": "Action successfully performed.",
+    "DEFAULTER": "Oops! Something went wrong!!",
+    "DEFAULT_AUTH": "User is not authenticated.",
+    "SERVER_ERROR": "Something went wrong please try again",
+    "LOGIN_SUCCESS": "Login Successfully.",
+    "INVALID_CREDENTIALS": "Invalid Login Credential.",
+    "NOT_FOUND": "Wrong Route!!",
+    "ERROR_CREATING_USER": "Error registering the user.",
+    "UNAUTHORIZED": "User is not authorized",
+
+    "TASK_CREATED": "Task created successfully.",
+    "TASK_UPDATED": "Task updated.",
+    "TASK_NOT_FOUND": "Task not found",
+    "TASK_DELETED": "Task deleted successfully",
+    "COLLABORATOR_NOT_FOUND": "Collaborator not found",
+    "USER_ALREADY_COLLABORATOR": "User already registered as a collaborator",
+    "COLLABORATOR_ADDED": "Collaborator added successfully"
+}
