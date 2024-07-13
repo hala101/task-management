@@ -1,3 +1,4 @@
+const { commonResponse } = require("../helpers");
 const Tasks = require("../models/Task");
 
 /*
@@ -8,9 +9,7 @@ exports.dashboard = async (req, res) => {
         const { q, priority, status, sortBy } = req.query;
         const query = { userId: req.user.id };
 
-        const page = req.query.page ? parseInt(req.query.page) : 1;
-        const limit = req.query.limit ? parseInt(req.query.limit) : 10;
-        const skip = (page - 1) * limit;
+        console.log("🚀 ~ file: dashboardController.js:11 ~ exports.dashboard= ~ req.query:", req.query);
 
         if (q) {
             query.name = new RegExp(q, "i");
@@ -23,6 +22,13 @@ exports.dashboard = async (req, res) => {
         }
 
         const tasks = await Tasks.find(query).sort(sortBy);
-        res.render("dashboard", { tasks });
-    } catch (err) {}
+        return commonResponse.success(res, "SUCCESS", 201, tasks);
+    } catch (err) {
+        console.log("🚀 ~ file: dashboardController.js:31 ~ exports.dashboard= ~ err:", err);
+        return commonResponse.error(res, "SERVER_ERROR", 500, {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+        });
+    }
 };
